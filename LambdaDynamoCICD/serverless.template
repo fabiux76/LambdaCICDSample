@@ -1,38 +1,49 @@
 {
 	"AWSTemplateFormatVersion" : "2010-09-09",
 	"Transform" : "AWS::Serverless-2016-10-31",
-	"Description" : "An AWS Serverless Application.",
+	"Description" : "Manage Students table",
 
 	"Resources" : {
-
-		"Get" : {
+		"StudentInfoFunction" : {
 			"Type" : "AWS::Serverless::Function",
 			"Properties": {
-				"Handler": "LambdaDynamoCICD::LambdaDynamoCICD.Functions::Get",
+				"FunctionName": "StudentInfoFunction",
+				"Handler": "LambdaDynamoCICD::LambdaDynamoCICD.Functions::StudentInfoFunction",
 				"Runtime": "dotnetcore2.1",
-				"CodeUri": "",
+				"CodeUri": "s3://my-first-function-frm-vsk-serverless/LambdaDynamoCICD.zip",
 				"MemorySize": 256,
 				"Timeout": 30,
-				"Role": null,
-				"Policies": [ "AWSLambdaBasicExecutionRole" ],
-				"Events": {
-					"RootGet": {
-						"Type": "Api",
-						"Properties": {
-							"Path": "/",
-							"Method": "GET"
-						}
-					}
-				}
+				"Role": "arn:aws:iam::955501240318:role/LambdaFullAccessRole"
 			}
-		}
-
-	},
-
-	"Outputs" : {
-		"ApiURL" : {
-			"Description" : "API endpoint URL for Prod environment",
-			"Value" : { "Fn::Sub" : "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/" }
+		},
+		"Students" : {
+			"Type": "AWS::DynamoDB::Table",
+			"Properties": {
+				"TableName" : "Students",
+				"AttributeDefinitions" : [
+					{
+						"AttributeName" : "studentid",
+						"AttributeType" : "N"
+					}
+				],
+				"KeySchema" : [
+					{
+						"AttributeName" : "studentid",
+						"KeyType" : "HASH"
+					}
+				],
+				"ProvisionedThroughput" : {
+					"ReadCapacityUnits" : 1,
+					"WriteCapacityUnits" : 1
+				}
+            }      
+		},
+		"StudentApi": {
+			"Type" : "AWS::Serverless::Api",
+			"Properties": {
+				"StageName" : "prod",
+				"DefinitionUri" : "s3://my-first-function-frm-vsk-serverless/studentswagger.json"
+			}
 		}
 	}
 }

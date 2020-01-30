@@ -1,0 +1,48 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09", 
+    "Transform": "AWS::Serverless-2016-10-31", 
+    "Resources": {
+        "Students": {
+            "Type": "AWS::DynamoDB::Table", 
+            "Properties": {
+                "KeySchema": [
+                    {
+                        "KeyType": "HASH", 
+                        "AttributeName": "studentid"
+                    }
+                ], 
+                "TableName": "Students", 
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": "studentid", 
+                        "AttributeType": "N"
+                    }
+                ], 
+                "ProvisionedThroughput": {
+                    "WriteCapacityUnits": 1, 
+                    "ReadCapacityUnits": 1
+                }
+            }
+        }, 
+        "StudentApi": {
+            "Type": "AWS::Serverless::Api", 
+            "Properties": {
+                "DefinitionUri": "s3://my-first-function-frm-vsk-serverless/studentswagger.json", 
+                "StageName": "prod"
+            }
+        }, 
+        "StudentInfoFunction": {
+            "Type": "AWS::Serverless::Function", 
+            "Properties": {
+                "FunctionName": "StudentInfoFunction", 
+                "MemorySize": 256, 
+                "Handler": "LambdaDynamoCICD::LambdaDynamoCICD.Functions::StudentInfoFunction", 
+                "Role": "arn:aws:iam::955501240318:role/LambdaFullAccessRole", 
+                "Timeout": 30, 
+                "CodeUri": "s3://my-first-function-frm-vsk-serverless/LambdaDynamoCICD.zip", 
+                "Runtime": "dotnetcore2.1"
+            }
+        }
+    }, 
+    "Description": "Manage Students table"
+}

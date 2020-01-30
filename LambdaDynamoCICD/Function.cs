@@ -37,7 +37,7 @@ namespace LambdaDynamoCICD
         /// </summary>
         /// <param name="request"></param>
         /// <returns>The list of blogs</returns>
-        public async Task<APIGatewayProxyResponse> Get(APIGatewayProxyRequest request, ILambdaContext context)
+        public async Task<APIGatewayProxyResponse> StudentInfoFunction(APIGatewayProxyRequest request, ILambdaContext context)
         {
             var studentId = request.QueryStringParameters["studentid"];
             context.Logger.Log($"Get Request for studentId : {studentId}");
