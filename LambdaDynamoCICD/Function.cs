@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.APIGatewayEvents;
 
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.DocumentModel;
+
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.Json.JsonSerializer))]
 
@@ -14,11 +17,18 @@ namespace LambdaDynamoCICD
 {
     public class Functions
     {
+        public static AmazonDynamoDBClient client;
+
         /// <summary>
         /// Default constructor that Lambda will invoke.
         /// </summary>
         public Functions()
         {
+            try { client = new AmazonDynamoDBClient(); }
+            catch (Exception ex)
+            {
+                Console.WriteLine("FAILED to create a DynamoDB client; " + ex.Message);
+            }
         }
 
 
@@ -27,15 +37,20 @@ namespace LambdaDynamoCICD
         /// </summary>
         /// <param name="request"></param>
         /// <returns>The list of blogs</returns>
-        public APIGatewayProxyResponse Get(APIGatewayProxyRequest request, ILambdaContext context)
+        public async Task<APIGatewayProxyResponse> Get(APIGatewayProxyRequest request, ILambdaContext context)
         {
-            context.Logger.LogLine("Get Request\n");
+            var studentId = request.QueryStringParameters["studentid"];
+            context.Logger.Log($"Get Request for studentId : {studentId}");
+            Primitive hash = new Primitive(studentId, true);
+
+            Table students = Table.LoadTable(client, "Students");
+            var student = await students.GetItemAsync(hash);
 
             var response = new APIGatewayProxyResponse
             {
                 StatusCode = (int)HttpStatusCode.OK,
-                Body = "Hello AWS Serverless",
-                Headers = new Dictionary<string, string> { { "Content-Type", "text/plain" } }
+                Body = student.ToJson(),
+                Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
             };
 
             return response;
